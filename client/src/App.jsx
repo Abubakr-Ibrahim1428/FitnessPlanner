@@ -1,122 +1,264 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+
+import { useState } from "react";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [activePage, setActivePage] = useState("Dashboard");
+  const [workouts, setWorkouts] = useState([
+    { id: 1, name: "Rintatreeni", exercises: 5, duration: 45, done: false },
+    { id: 2, name: "Jalkatreeni", exercises: 6, duration: 60, done: false },
+    { id: 3, name: "Selkätreeni", exercises: 4, duration: 40, done: true },
+  ]);
+
+  const [newWorkout, setNewWorkout] = useState("");
+
+  function addWorkout(e) {
+    e.preventDefault();
+
+    if (newWorkout.trim() === "") return;
+
+    const workout = {
+      id: Date.now(),
+      name: newWorkout,
+      exercises: 0,
+      duration: 45,
+      done: false,
+    };
+
+    setWorkouts([...workouts, workout]);
+    setNewWorkout("");
+  }
+
+  function toggleWorkout(id) {
+    setWorkouts(
+      workouts.map((workout) =>
+        workout.id === id
+          ? { ...workout, done: !workout.done }
+          : workout
+      )
+    );
+  }
+
+  function deleteWorkout(id) {
+    setWorkouts(workouts.filter((workout) => workout.id !== id));
+  }
+
+  const completed = workouts.filter((workout) => workout.done).length;
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app">
+      <aside className="sidebar">
+        <h2 className="logo">FIT<span>PLAN</span></h2>
+        <p className="menu-title">VALIKKO</p>
 
-      <div className="ticks"></div>
+        {["Dashboard", "Treenit", "Edistyminen"].map((page) => (
+          <button
+            key={page}
+            className={`nav-button ${
+              activePage === page ? "active" : ""
+            }`}
+            onClick={() => setActivePage(page)}
+          >
+            {page === "Dashboard"}
+            {page === "Treenit"}
+            {page === "Edistyminen"}
+            <span>{page}</span>
+          </button>
+        ))}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        <div className="sidebar-bottom">
+          <div className="avatar">N</div>
+          <div>
+            <strong>Oma profiili</strong>
+            <p>Fitness-jäsen</p>
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      </aside>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <main className="main">
+        <header className="topbar">
+          <div>
+            <p className="date">OMA KUNTOILUSUUNNITELMA</p>
+            <h1>
+              {activePage === "Dashboard"
+                ? "Dashboard"
+                : activePage}
+            </h1>
+          </div>
+          <div className="today">Pysy tavoitteessasi</div>
+        </header>
+
+        {activePage === "Dashboard" && (
+          <>
+            <section className="welcome">
+              <div>
+                <p className="green-text">AIKA KEHITTYÄ</p>
+                <h2>Treenaa fiksusti.</h2>
+                <h2 className="muted-heading">Saavuta tavoitteesi.</h2>
+                <p>
+                  Suunnittele treenisi ja seuraa kehitystäsi
+                  yhdessä paikassa.
+                </p>
+                <button
+                  className="primary-button"
+                  onClick={() => setActivePage("Treenit")}
+                >
+                  Katso treenit →
+                </button>
+              </div>
+              <div className="welcome-icon">🏋️</div>
+            </section>
+
+            <section className="stats">
+              <div className="stat-card">
+                <p>Viikon treenit</p>
+                <h2>{workouts.length}</h2>
+                <span>suunniteltua treeniä</span>
+              </div>
+              <div className="stat-card">
+                <p>Suoritetut treenit</p>
+                <h2>{completed}</h2>
+                <span>hyvää työtä!</span>
+              </div>
+              <div className="stat-card">
+                <p>Edistyminen</p>
+                <h2>
+                  {workouts.length
+                    ? Math.round((completed / workouts.length) * 100)
+                    : 0}%
+                </h2>
+                <div className="progress">
+                  <div
+                    className="progress-fill"
+                    style={{
+                      width: `${
+                        workouts.length
+                          ? (completed / workouts.length) * 100
+                          : 0
+                      }%`,
+                    }}
+                  />
+                </div>
+              </div>
+            </section>
+
+            <WorkoutList
+              workouts={workouts.slice(0, 3)}
+              toggleWorkout={toggleWorkout}
+              deleteWorkout={deleteWorkout}
+            />
+          </>
+        )}
+
+        {activePage === "Treenit" && (
+          <>
+            <section className="section-card">
+              <h2>Lisää uusi treeni</h2>
+              <p className="description">
+                Luo oma treenisuunnitelma.
+              </p>
+              <form className="add-form" onSubmit={addWorkout}>
+                <input
+                  type="text"
+                  placeholder="Esim. Olkapäätreeni"
+                  value={newWorkout}
+                  onChange={(e) => setNewWorkout(e.target.value)}
+                />
+                <button className="primary-button" type="submit">
+                  + Lisää treeni
+                </button>
+              </form>
+            </section>
+
+            <WorkoutList
+              workouts={workouts}
+              toggleWorkout={toggleWorkout}
+              deleteWorkout={deleteWorkout}
+            />
+          </>
+        )}
+
+        {activePage === "Edistyminen" && (
+          <section className="section-card">
+            <h2>Oma edistyminen</h2>
+            <p className="description">
+              Seuraa treeniesi suorittamista.
+            </p>
+            <div className="progress-number">
+              {workouts.length
+                ? Math.round((completed / workouts.length) * 100)
+                : 0}%
+            </div>
+            <div className="progress large-progress">
+              <div
+                className="progress-fill"
+                style={{
+                  width: `${
+                    workouts.length
+                      ? (completed / workouts.length) * 100
+                      : 0
+                  }%`,
+                }}
+              />
+            </div>
+            <p>
+              Olet suorittanut {completed} / {workouts.length} treeniä.
+            </p>
+          </section>
+        )}
+      </main>
+    </div>
+  );
 }
 
-export default App
+function WorkoutList({ workouts, toggleWorkout, deleteWorkout }) {
+  return (
+    <section className="section-card">
+      <div className="section-heading">
+        <div>
+          <p className="green-text">TREENIOHJELMA</p>
+          <h2>Treenisi</h2>
+        </div>
+        <span className="workout-count">
+          {workouts.length} treeniä
+        </span>
+      </div>
+
+      {workouts.length === 0 ? (
+        <p className="description">Ei vielä treenejä. Lisää ensimmäinen!</p>
+      ) : (
+        <div className="workout-list">
+          {workouts.map((workout) => (
+            <div className="workout-item" key={workout.id}>
+              <div className="workout-icon">🏋️</div>
+              <div className="workout-info">
+                <h3>{workout.name}</h3>
+                <p>
+                  {workout.exercises} liikettä · {workout.duration} min
+                </p>
+              </div>
+              <button
+                className={`done-button ${
+                  workout.done ? "completed" : ""
+                }`}
+                onClick={() => toggleWorkout(workout.id)}
+              >
+                {workout.done ? "✓ Valmis" : "Aloita"}
+              </button>
+              <button
+                className="delete-button"
+                onClick={() => deleteWorkout(workout.id)}
+                aria-label={`Poista ${workout.name}`}
+                title="Poista treeni"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+export default App;
