@@ -1,0 +1,32 @@
+.signup-container {
+  max-width: 420px;
+  padding: 24px;
+  margin: 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.signup-container form {
+  display: grid;
+  gap: 12px;
+}
+
+.signup-container .form-group {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+
+.signup-container form button,
+.signup-container > button {
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 4px;
+  color: #000;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.signup-container > button {
+  margin-top: 16px;
+}
