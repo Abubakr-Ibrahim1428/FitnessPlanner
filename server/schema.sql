@@ -28,6 +28,7 @@ CREATE TABLE workouts (
   performed_on DATE NOT NULL,
   duration_min INT,
   notes TEXT,
+  completed BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_user_date (user_id, performed_on)

@@ -1,9 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import LogIn from "./LogIn.jsx";
 import SignUp from "./SignUp.jsx";
 import AccountManagement from "./accountmanagement.jsx";
 import { deleteAccount } from "../services/authService";
+import {
+  createWorkout,
+  getWorkouts,
+  removeWorkout,
+  updateWorkout,
+} from "../services/workoutService";
 
 function App() {
   const [activePage, setActivePage] = useState("Dashboard");
@@ -13,46 +19,77 @@ function App() {
     return token && username ? { token, username } : null;
   });
   const [accountError, setAccountError] = useState("");
-  const [workouts, setWorkouts] = useState([
-    { id: 1, name: "Rintatreeni", exercises: 5, duration: 45, done: false },
-    { id: 2, name: "Jalkatreeni", exercises: 6, duration: 60, done: false },
-    { id: 3, name: "Selkätreeni", exercises: 4, duration: 40, done: true },
-  ]);
+  const [workouts, setWorkouts] = useState([]);
+  const [dataError, setDataError] = useState("");
 
   const [newWorkout, setNewWorkout] = useState("");
 
-  function addWorkout(e) {
+  useEffect(() => {
+    if (!session) return undefined;
+
+    let active = true;
+    getWorkouts(session.token)
+      .then((data) => {
+        if (active) setWorkouts(data);
+      })
+      .catch((err) => {
+        if (active) setDataError(err.message);
+      });
+    return () => {
+      active = false;
+    };
+  }, [session]);
+
+  async function addWorkout(e) {
     e.preventDefault();
 
     if (newWorkout.trim() === "") return;
+    if (!session) {
+      setActivePage("LogIn");
+      return;
+    }
 
-    const workout = {
-      id: Date.now(),
-      name: newWorkout,
-      exercises: 0,
-      duration: 45,
-      done: false,
-    };
-
-    setWorkouts([...workouts, workout]);
-    setNewWorkout("");
+    const name = newWorkout.trim();
+    try {
+      const { id } = await createWorkout(session.token, {
+        name,
+        performedOn: new Date().toISOString().slice(0, 10),
+        durationMin: 45,
+      });
+      setWorkouts((current) => [
+        ...current,
+        { id, name, exercises: 0, duration_min: 45, completed: false },
+      ]);
+      setNewWorkout("");
+    } catch (err) {
+      setDataError(err.message);
+    }
   }
 
-  function toggleWorkout(id) {
-    setWorkouts(
-      workouts.map((workout) =>
-        workout.id === id
-          ? { ...workout, done: !workout.done }
-          : workout
-      )
-    );
+  async function toggleWorkout(id) {
+    const workout = workouts.find((item) => item.id === id);
+    if (!workout) return;
+    const completed = !workout.completed;
+    try {
+      await updateWorkout(session.token, id, { completed });
+      setWorkouts((current) =>
+        current.map((item) => item.id === id ? { ...item, completed } : item)
+      );
+    } catch (err) {
+      setDataError(err.message);
+    }
   }
 
-  function deleteWorkout(id) {
-    setWorkouts(workouts.filter((workout) => workout.id !== id));
+  async function deleteWorkout(id) {
+    try {
+      await removeWorkout(session.token, id);
+      setWorkouts((current) => current.filter((workout) => workout.id !== id));
+    } catch (err) {
+      setDataError(err.message);
+    }
   }
 
-  const completed = workouts.filter((workout) => workout.done).length;
+  const completed = workouts.filter((workout) => workout.completed).length;
 
   function handleLoggedIn(data) {
     localStorage.setItem("fitnessPlannerToken", data.token);
@@ -64,6 +101,7 @@ function App() {
   function handleLogOut() {
     localStorage.removeItem("fitnessPlannerToken");
     localStorage.removeItem("fitnessPlannerUsername");
+    setWorkouts([]);
     setSession(null);
     setActivePage("Dashboard");
   }
@@ -130,6 +168,7 @@ function App() {
       </aside>
 
       <main className="main">
+        {dataError && <p role="alert">{dataError}</p>}
         {activePage === "LogIn" && (
           <LogIn
             onSignUp={() => setActivePage("SignUp")}
@@ -303,16 +342,16 @@ function WorkoutList({ workouts, toggleWorkout, deleteWorkout }) {
               <div className="workout-info">
                 <h3>{workout.name}</h3>
                 <p>
-                  {workout.exercises} liikettä · {workout.duration} min
+                  {workout.exercises} liikettä · {workout.duration_min} min
                 </p>
               </div>
               <button
                 className={`done-button ${
-                  workout.done ? "completed" : ""
+                  workout.completed ? "completed" : ""
                 }`}
                 onClick={() => toggleWorkout(workout.id)}
               >
-                {workout.done ? "Valmis" : "Aloita"}
+                {workout.completed ? "Valmis" : "Aloita"}
               </button>
               <button
                 className="delete-button"
