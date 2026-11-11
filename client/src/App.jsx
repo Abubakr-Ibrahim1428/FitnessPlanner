@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import Settings from "./settings.jsx";
 import LogIn from "./LogIn.jsx";
 import SignUp from "./SignUp.jsx";
 import AccountManagement from "./accountmanagement.jsx";
@@ -11,8 +12,25 @@ import {
   updateWorkout,
 } from "../services/workoutService";
 
+function getInitialTheme() {
+  const savedTheme = localStorage.getItem("fitnessPlannerTheme");
+  if (savedTheme === "light" || savedTheme === "dark") return savedTheme;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function getInitialPalette() {
+  const savedPalette = localStorage.getItem("fitnessPlannerPalette");
+  return ["ocean", "forest", "sunset", "berry"].includes(savedPalette)
+    ? savedPalette
+    : "ocean";
+}
+
 function App() {
   const [activePage, setActivePage] = useState("Dashboard");
+  const [theme, setTheme] = useState(getInitialTheme);
+  const [palette, setPalette] = useState(getInitialPalette);
   const [session, setSession] = useState(() => {
     const token = localStorage.getItem("fitnessPlannerToken");
     const username = localStorage.getItem("fitnessPlannerUsername");
@@ -23,6 +41,16 @@ function App() {
   const [dataError, setDataError] = useState("");
 
   const [newWorkout, setNewWorkout] = useState("");
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("fitnessPlannerTheme", theme);
+  }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.dataset.palette = palette;
+    localStorage.setItem("fitnessPlannerPalette", palette);
+  }, [palette]);
 
   useEffect(() => {
     if (!session) return undefined;
@@ -127,27 +155,28 @@ function App() {
           <p className="date">OMA KUNTOILUSUUNNITELMA</p>
           <h1>
             {activePage === "Dashboard"
-              ? "Dashboard"
+              ? "Koti"
               : activePage}
           </h1>
         </div>
-        <div className="today">Pysy tavoitteessasi</div>
       </header>
 
       <aside className="sidebar">
-        <h2 className="logo">FIT<span>PLAN</span></h2>
+        <h2 className="logo">Winter Arc Planner</h2>
         <p className="menu-title">
           VALIKKO
           <button type="button" onClick={() => setActivePage("LogIn")}>
-            {session ? "Vaihda tiliä" : "Kirjaudu"}
+            Kirjaudu
           </button>
         </p>
 
-        {["Koti", "Treenit", "Edistyminen", "Tili"].map((page) => (
+        {["Koti", "Treenit", "Edistyminen", "Tili", "Asetukset"].map((page) => (
           <button
             key={page}
             className={`nav-button ${
-              activePage === page ? "active" : ""
+              activePage === (page === "Koti" ? "Dashboard" : page)
+                ? "active"
+                : ""
             }`}
             onClick={() => setActivePage(page === "Koti" ? "Dashboard" : page)}
           >
@@ -198,13 +227,21 @@ function App() {
           )
         )}
 
+        {activePage === "Asetukset" && (
+          <Settings
+            theme={theme}
+            onThemeChange={setTheme}
+            palette={palette}
+            onPaletteChange={setPalette}
+          />
+        )}
+
         {activePage === "Dashboard" && (
           <>
             <section className="welcome">
               <div>
-                <p className="green-text">AIKA KEHITTYÄ</p>
-                <h2>Treenaa fiksusti.</h2>
-                <h2 className="muted-heading">Saavuta tavoitteesi.</h2>
+                <h2>Optimoi itsesi!</h2>
+                <h2 className="muted-heading">Lock In!!</h2>
                 <p>
                   Suunnittele treenisi ja seuraa kehitystäsi
                   yhdessä paikassa.
@@ -336,7 +373,7 @@ function WorkoutList({ workouts, toggleWorkout, deleteWorkout }) {
       {workouts.length === 0 ? (
         <p className="description">Ei vielä treenejä. Lisää ensimmäinen!</p>
       ) : (
-        <div className="workout-list">
+        <div className="workout-list workout-card-grid">
           {workouts.map((workout) => (
             <div className="workout-item" key={workout.id}>
               <div className="workout-info">

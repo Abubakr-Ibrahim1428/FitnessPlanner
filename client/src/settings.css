@@ -1,0 +1,31 @@
+.settings-page {
+  min-height: 180px;
+}
+
+.settings-page h2 {
+  margin-top: 8px;
+}
+
+.theme-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 420px;
+  margin-top: 24px;
+  color: var(--text-h);
+  font-weight: 700;
+  text-align: left;
+}
+
+.theme-setting select {
+  min-width: 140px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 12px;
+  color: var(--text-h);
+  background: var(--bg);
+  font: inherit;
+  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+  outline: 0;
+}

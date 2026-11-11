@@ -24,10 +24,10 @@ function LogIn({ onSignUp, onLoggedIn }) {
 
   return (
     <div className="login-container">
-      <h2>Log In</h2>
+      <h2>Kirjaudu sisään</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="username">Username:</label>
+          <label htmlFor="username">Käyttäjänimi:</label>
           <input
             type="text"
             id="username"
@@ -37,7 +37,7 @@ function LogIn({ onSignUp, onLoggedIn }) {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="password">Password:</label>
+          <label htmlFor="password">Salasana:</label>
           <input
             type="password"
             id="password"
@@ -47,7 +47,7 @@ function LogIn({ onSignUp, onLoggedIn }) {
           />
         </div>
         <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Kirjaudutaan...' : 'Log In'}
+          {isSubmitting ? 'Kirjaudutaan...' : 'Kirjaudu'}
         </button>
       </form>
       {error && <p role="alert">{error}</p>}
