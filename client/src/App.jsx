@@ -240,8 +240,8 @@ function App() {
           <>
             <section className="welcome">
               <div>
-                <h2>Optimoi itsesi!</h2>
-                <h2 className="muted-heading">Lock In!!</h2>
+                <h2>Welcome to looksmaxxing brother!</h2>
+                <h2 className="muted-heading">Ascend without destroying your bones!</h2>
                 <p>
                   Suunnittele treenisi ja seuraa kehitystäsi
                   yhdessä paikassa.
