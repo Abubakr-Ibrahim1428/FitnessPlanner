@@ -12,6 +12,36 @@ import {
   updateWorkout,
 } from "../services/workoutService";
 
+const workoutPrograms = [
+  {
+    id: "full-body",
+    name: "Koko keho",
+    focus: "Koko kehon peruskunto",
+    movements: ["Kyykky", "Punnerrus", "Askelkyykky", "Lankku", "Vuorikiipeilijä"],
+  },
+  {
+    id: "upper-body",
+    name: "Ylävartalo",
+    focus: "Rinta, hartiat ja käsivarret",
+    movements: ["Punnerrus", "Hauiskääntö ilman painoja", "Ojentajadippi", "Lankku olkapääkosketuksilla", "Supermies"],
+  },
+  {
+    id: "legs",
+    name: "Jalat ja pakarat",
+    focus: "Alavartalon voima",
+    movements: ["Kyykky", "Peruutusaskelkyykky", "Lantionnosto", "Pohjenousu", "Seinäistunta"],
+  },
+  {
+    id: "core",
+    name: "Keskivartalo",
+    focus: "Vatsa ja keskivartalon hallinta",
+    movements: ["Lankku", "Polkupyörävatsat", "Dead bug", "Sivulankku", "Vuorikiipeilijä"],
+  },
+];
+
+const MOVEMENT_SECONDS = 40;
+const REST_SECONDS = 15;
+
 function getInitialTheme() {
   const savedTheme = localStorage.getItem("fitnessPlannerTheme");
   if (savedTheme === "light" || savedTheme === "dark") return savedTheme;
@@ -39,6 +69,7 @@ function App() {
   const [accountError, setAccountError] = useState("");
   const [workouts, setWorkouts] = useState([]);
   const [dataError, setDataError] = useState("");
+  const [activeProgram, setActiveProgram] = useState(null);
 
   const [newWorkout, setNewWorkout] = useState("");
 
@@ -298,6 +329,48 @@ function App() {
 
         {activePage === "Treenit" && (
           <>
+            {activeProgram && (
+              <WorkoutTimer
+                key={activeProgram.id}
+                program={activeProgram}
+                onClose={() => setActiveProgram(null)}
+              />
+            )}
+
+            <section className="section-card">
+              <div className="section-heading">
+                <div>
+                  <p className="green-text">VALMIIT OHJELMAT</p>
+                  <h2>Valitse treeni</h2>
+                </div>
+                <span className="workout-count">40 s / liike · 15 s lepo</span>
+              </div>
+              <p className="description">
+                Valitse ohjelma ja ajastin käynnistyy heti.
+              </p>
+              <div className="program-grid">
+                {workoutPrograms.map((program) => (
+                  <article className="program-card" key={program.id}>
+                    <div>
+                      <h3>{program.name}</h3>
+                      <p className="description">{program.focus}</p>
+                    </div>
+                    <ul className="movement-list">
+                      {program.movements.map((movement) => (
+                        <li key={movement}>{movement}</li>
+                      ))}
+                    </ul>
+                    <button
+                      className="primary-button"
+                      onClick={() => setActiveProgram(program)}
+                    >
+                      Aloita treeni
+                    </button>
+                  </article>
+                ))}
+              </div>
+            </section>
+
             <section className="section-card">
               <h2>Lisää uusi treeni</h2>
               <p className="description">
@@ -354,6 +427,129 @@ function App() {
         )}
       </main>
     </div>
+  );
+}
+
+function WorkoutTimer({ program, onClose }) {
+  const [movementIndex, setMovementIndex] = useState(0);
+  const [phase, setPhase] = useState("exercise");
+  const [secondsRemaining, setSecondsRemaining] = useState(MOVEMENT_SECONDS);
+  const [isRunning, setIsRunning] = useState(true);
+  const [isComplete, setIsComplete] = useState(false);
+  const movement = program.movements[movementIndex];
+
+  useEffect(() => {
+    if (!isRunning || isComplete) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      if (secondsRemaining > 1) {
+        setSecondsRemaining(secondsRemaining - 1);
+      } else if (phase === "rest") {
+        const nextMovement = movementIndex + 1;
+        setMovementIndex(nextMovement);
+        setPhase("exercise");
+        setSecondsRemaining(MOVEMENT_SECONDS);
+      } else if (movementIndex === program.movements.length - 1) {
+        setSecondsRemaining(0);
+        setIsRunning(false);
+        setIsComplete(true);
+      } else {
+        setPhase("rest");
+        setSecondsRemaining(REST_SECONDS);
+      }
+    }, 1000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [
+    isComplete,
+    isRunning,
+    movementIndex,
+    phase,
+    program.movements.length,
+    secondsRemaining,
+  ]);
+
+  function skipToNextMovement() {
+    if (movementIndex === program.movements.length - 1) {
+      setSecondsRemaining(0);
+      setIsRunning(false);
+      setIsComplete(true);
+      return;
+    }
+
+    const nextMovement = movementIndex + 1;
+    setMovementIndex(nextMovement);
+    setPhase("exercise");
+    setSecondsRemaining(MOVEMENT_SECONDS);
+  }
+
+  function restart() {
+    setMovementIndex(0);
+    setPhase("exercise");
+    setSecondsRemaining(MOVEMENT_SECONDS);
+    setIsComplete(false);
+    setIsRunning(true);
+  }
+
+  const formattedTime = `${String(Math.floor(secondsRemaining / 60)).padStart(2, "0")}:${String(
+    secondsRemaining % 60,
+  ).padStart(2, "0")}`;
+
+  return (
+    <section className="section-card timer-panel" aria-live="polite">
+      <div className="section-heading">
+        <div>
+          <p className="green-text">TREENIAJASTIN</p>
+          <h2>{program.name}</h2>
+        </div>
+        <button className="delete-button" onClick={onClose}>
+          Sulje ajastin
+        </button>
+      </div>
+
+      {isComplete ? (
+        <div className="timer-content">
+          <h3>Treeni valmis — hienoa työtä!</h3>
+          <div className="timer-actions">
+            <button className="primary-button" onClick={restart}>
+              Aloita uudelleen
+            </button>
+            <button className="done-button" onClick={onClose}>
+              Valmis
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="timer-content">
+          <p className="description">
+            {phase === "rest" ? "Lepo" : `Liike ${movementIndex + 1} / ${program.movements.length}`}
+          </p>
+          <h3>{phase === "rest" ? "Hengähdä hetki" : movement}</h3>
+          <p className="timer-countdown" aria-label={`${secondsRemaining} sekuntia`}>
+            {formattedTime}
+          </p>
+          <div className="progress timer-progress">
+            <div
+              className="progress-fill"
+              style={{
+                width: `${((movementIndex + (phase === "rest" ? 0.5 : 0)) / program.movements.length) * 100}%`,
+              }}
+            />
+          </div>
+          <div className="timer-actions">
+            <button
+              className="primary-button"
+              onClick={() => setIsRunning((running) => !running)}
+            >
+              {isRunning ? "Tauko" : "Jatka"}
+            </button>
+            <button className="done-button" onClick={skipToNextMovement}>
+              Ohita liike
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 

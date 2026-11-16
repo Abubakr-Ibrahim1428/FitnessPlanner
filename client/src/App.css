@@ -229,6 +229,75 @@
   margin-top: 20px;
 }
 
+.program-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.program-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--bg);
+  box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+}
+
+.program-card h3,
+.timer-content h3 {
+  margin: 0;
+  color: var(--text-h);
+}
+
+.movement-list {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text);
+  text-align: left;
+}
+
+.program-card .primary-button {
+  margin-top: auto;
+}
+
+.timer-panel {
+  margin-bottom: 20px;
+}
+
+.timer-content {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding-top: 20px;
+}
+
+.timer-countdown {
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: clamp(48px, 10vw, 72px);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.timer-progress {
+  width: min(100%, 480px);
+}
+
+.timer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.timer-actions .primary-button {
+  margin-top: 0;
+}
+
 .add-form {
   display: flex;
   gap: 8px;
